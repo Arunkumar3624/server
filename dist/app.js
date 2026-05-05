@@ -133,6 +133,54 @@ app.delete("/nodes/:id", async (req, res) => {
         return res.status(400).json({ error: error.message });
     res.status(204).send();
 });
+app.patch("/nodes/:id", async (req, res) => {
+    const userId = req.userId;
+    const schema = z.object({
+        title: z.string().optional(),
+        description: z.string().optional(),
+        color: z.string().optional(),
+        tags: z.array(z.string()).optional(),
+        category: z.string().nullable().optional(),
+        priority: z.string().nullable().optional(),
+        position: z.object({ x: z.number(), y: z.number() }).optional(),
+        collapsed: z.boolean().optional()
+    });
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) {
+        return res.status(400).json({ error: parsed.error.flatten() });
+    }
+    const b = parsed.data;
+    const payload = {};
+    if (b.title !== undefined)
+        payload.title = b.title;
+    if (b.description !== undefined)
+        payload.description = b.description;
+    if (b.color !== undefined)
+        payload.color = b.color;
+    if (b.tags !== undefined)
+        payload.tags = b.tags;
+    if (b.category !== undefined)
+        payload.category = b.category;
+    if (b.priority !== undefined)
+        payload.priority = b.priority;
+    if (b.position) {
+        payload.x = b.position.x;
+        payload.y = b.position.y;
+    }
+    if (b.collapsed !== undefined)
+        payload.collapsed = b.collapsed;
+    payload.updated_at = new Date().toISOString();
+    const { data, error } = await supabase
+        .from("nodes")
+        .update(payload)
+        .eq("id", req.params.id)
+        .eq("user_id", userId)
+        .select("*")
+        .single();
+    if (error)
+        return res.status(400).json({ error: error.message });
+    res.json(data);
+});
 /* -------- CONNECTIONS -------- */
 app.get("/connections", async (req, res) => {
     const userId = req.userId;
