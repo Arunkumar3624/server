@@ -162,6 +162,24 @@ app.post("/nodes", async (req, res) => {
 });
 
 /* -------- CONNECTIONS -------- */
+app.get("/connections", async (req, res) => {
+  const userId = (req as any).userId;
+  const projectId = req.query.projectId as string;
+
+  if (!projectId) {
+    return res.status(400).json({ error: "Missing projectId" });
+  }
+
+  const { data, error } = await supabase
+    .from("connections")
+    .select("*")
+    .eq("project_id", projectId)
+    .eq("user_id", userId);
+
+  if (error) return res.status(400).json({ error: error.message });
+
+  res.json(data);
+});
 
 app.post("/connections", async (req, res) => {
   const userId = (req as any).userId;
