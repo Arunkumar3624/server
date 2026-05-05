@@ -122,6 +122,17 @@ app.post("/nodes", async (req, res) => {
         return res.status(400).json({ error: error.message });
     res.status(201).json(data);
 });
+app.delete("/nodes/:id", async (req, res) => {
+    const userId = req.userId;
+    const { error } = await supabase
+        .from("nodes")
+        .delete()
+        .eq("id", req.params.id)
+        .eq("user_id", userId);
+    if (error)
+        return res.status(400).json({ error: error.message });
+    res.status(204).send();
+});
 /* -------- CONNECTIONS -------- */
 app.get("/connections", async (req, res) => {
     const userId = req.userId;
@@ -165,5 +176,17 @@ app.post("/connections", async (req, res) => {
     if (error)
         return res.status(400).json({ error: error.message });
     res.status(201).json(data);
+});
+app.delete("/connections/:id", async (req, res) => {
+    const userId = req.userId;
+    const { error } = await supabase
+        .from("connections")
+        .delete()
+        .eq("id", req.params.id)
+        .eq("user_id", userId);
+    if (error) {
+        return res.status(400).json({ error: error.message });
+    }
+    res.status(204).send();
 });
 export default app;
